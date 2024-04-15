@@ -21,5 +21,3 @@ This repository contains JSON files to import into Node-RED.
 1. After importing the project, click the "Deploy" button in the upper right corner to activate the imported stream.
 
 2. Your Node-RED project is now up and running and ready to use.
-
-Translated with www.DeepL.com/Translator (free version)
