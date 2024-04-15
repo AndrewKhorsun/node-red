@@ -1,0 +1,208 @@
+[
+    {
+        "id": "6880846713c824c5",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "224d6ef8b4c43f71",
+        "type": "http in",
+        "z": "6880846713c824c5",
+        "name": "",
+        "url": "/GetRepeatedTask",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "dd44053f6e849cd2"
+            ]
+        ]
+    },
+    {
+        "id": "dd44053f6e849cd2",
+        "type": "json",
+        "z": "6880846713c824c5",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 310,
+        "y": 120,
+        "wires": [
+            [
+                "7f878ebec7a8e9f7"
+            ]
+        ]
+    },
+    {
+        "id": "7f878ebec7a8e9f7",
+        "type": "function",
+        "z": "6880846713c824c5",
+        "name": "function 1",
+        "func": "\nconst requestData = msg.payload;\n\nconst dataTypes = {\n    'merchant': 'string',\n    'taskNumber': 'number',\n    'date_close': 'string',\n    'cam1': 'number',\n    'cam2': 'number',\n    'cam3': 'number',\n    'cam4': 'number',\n}\n\nfunction validateData(data) {\n    const errors = {};\n\n    for (const field in dataTypes) {\n        if (!(field in data)) {\n            errors[field] = `Required field ${field} is missing.`;\n        }\n    }\n\n    for (const field in data) {\n        if (field in dataTypes) {\n            const expectedType = dataTypes[field];\n            const actualType = typeof data[field];\n\n            if (actualType !== expectedType) {\n                errors[field] = `Invalid data type. Expected '${expectedType}', was received '${actualType}'.`;\n            }\n        }\n    }\n\n    if (Object.keys(errors).length === 0) {\n        return { valid: true };\n    } else {\n        return { valid: false, errors: errors };\n    }\n}\n\nconst isValidData = validateData(requestData)\n\nif (!isValidData.valid) {\n    msg.payload = { ...isValidData }\n}\n\nmsg.payload = {...msg.payload, valid:isValidData.valid}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 120,
+        "wires": [
+            [
+                "f40475af05eee0c7"
+            ]
+        ]
+    },
+    {
+        "id": "4325dbb74dbd6c47",
+        "type": "http response",
+        "z": "6880846713c824c5",
+        "name": "Bad Request ",
+        "statusCode": "400",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 770,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "f40475af05eee0c7",
+        "type": "switch",
+        "z": "6880846713c824c5",
+        "name": "isValid",
+        "property": "payload.valid",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 570,
+        "y": 120,
+        "wires": [
+            [
+                "4325dbb74dbd6c47"
+            ],
+            [
+                "437fca52a9d193b8"
+            ]
+        ],
+        "outputLabels": [
+            "1",
+            "2"
+        ]
+    },
+    {
+        "id": "437fca52a9d193b8",
+        "type": "function",
+        "z": "6880846713c824c5",
+        "name": "function 2",
+        "func": "const taskHistory = [\n    {\n        \"merchant\": \"system5782\",\n        \"taskNumber\": 735957,\n        \"date_close\": \"2024-01-22 22:42:12\",\n        \"cam1\": 0,\n        \"cam2\": 1,\n        \"cam3\": 0,\n        \"cam4\": 0\n    },\n    {\n        \"merchant\": \"system5782\",\n        \"taskNumber\": 734340,\n        \"date_close\": \"2024-01-29 12:54:12\",\n        \"cam1\": 0,\n        \"cam2\": 0,\n        \"cam3\": 0,\n        \"cam4\": 1\n    },\n    {\n        \"merchant\": \"system5782\",\n        \"taskNumber\": 636330,\n        \"date_close\": \"2024-01-25 20:12:12\",\n        \"cam1\": 1,\n        \"cam2\": 0,\n        \"cam3\": 0,\n        \"cam4\": 1\n    },\n    {\n        \"merchant\": \"system5782\",\n        \"taskNumber\": 356680,\n        \"date_close\": \"2024-01-22 15:56:32\",\n        \"cam1\": 1,\n        \"cam2\": 1,\n        \"cam3\": 0,\n        \"cam4\": 0\n    },\n    {\n        \"merchant\": \"system1254\",\n        \"taskNumber\": 432963,\n        \"date_close\": \"2024-02-01 16:34:12\",\n        \"cam1\": 0,\n        \"cam2\": 1,\n        \"cam3\": 0,\n        \"cam4\": 1\n    },\n    {\n        \"merchant\": \"system5782\",\n        \"taskNumber\": 356680,\n        \"date_close\": \"2024-02-02 19:56:32\",\n        \"cam1\": 1,\n        \"cam2\": 1,\n        \"cam3\": 0,\n        \"cam4\": 1\n    }\n]\n\nconst currentDate = new Date(msg.payload.date_close);\nconst endDate = new Date(currentDate);\nendDate.setDate(currentDate.getDate() - 10);\n\nconst repeatedIssues = []\n\nfor (const task of taskHistory) {\n    const taskDate = new Date(task.date_close);\n    const { taskNumber, date_close, merchant } = task\n\n\n    if (taskDate >= endDate && taskDate <= currentDate && msg.payload.merchant === merchant) {\n\n        const repeatedIssue = {\n            taskNumber,\n            date_close,\n        };\n\n        for (let i = 1; i <= 4; i++) {\n            if (task[`cam${i}`] === 1) {\n                repeatedIssue[`cam${i}`] = 1\n            }\n        }\n\n        repeatedIssues.push(repeatedIssue);\n    }\n\n}\n\nmsg.payload = { ...msg.payload, repeatedIssues}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 200,
+        "wires": [
+            [
+                "4823a5bd11f93756",
+                "ec023e8ecf3a5e69"
+            ]
+        ],
+        "outputLabels": [
+            "1"
+        ]
+    },
+    {
+        "id": "33377c92a426096d",
+        "type": "http response",
+        "z": "6880846713c824c5",
+        "name": "OK",
+        "statusCode": "200",
+        "headers": {
+            "content-type": "application/json"
+        },
+        "x": 1130,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "b9d10d2b1b8a3937",
+        "type": "GSheet",
+        "z": "6880846713c824c5",
+        "creds": "8c2f261721c03b65",
+        "method": "append",
+        "action": "",
+        "sheet": "1dA_wBqNWDIOsCDQ3zS3UU4P9a41NZBLSZdEYds8AEtQ",
+        "cells": "'Sheet1'!A2:D30",
+        "flatten": false,
+        "name": "",
+        "x": 1170,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ec023e8ecf3a5e69",
+        "type": "function",
+        "z": "6880846713c824c5",
+        "name": "function 3",
+        "func": "const currentDate = new Date();\nconst preparedDate = currentDate.toISOString().replace('T', ' ').slice(0,19);\n\nmsg.payload = [preparedDate, msg.payload.merchant, msg.payload.taskNumber, JSON.stringify(msg.payload.repeatedIssues) ]\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 260,
+        "wires": [
+            [
+                "b9d10d2b1b8a3937"
+            ]
+        ]
+    },
+    {
+        "id": "4823a5bd11f93756",
+        "type": "function",
+        "z": "6880846713c824c5",
+        "name": "function 4",
+        "func": "msg.payload = msg.payload.repeatedIssues\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 140,
+        "wires": [
+            [
+                "33377c92a426096d"
+            ]
+        ]
+    },
+    {
+        "id": "8c2f261721c03b65",
+        "type": "gauth",
+        "name": "node-red@test-node-red-project.iam.gserviceaccount.com"
+    }
+]
